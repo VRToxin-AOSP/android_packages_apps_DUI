@@ -164,32 +164,32 @@ public class PulseController {
 
         void register() {
             ContentResolver resolver = mContext.getContentResolver();
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.FLING_PULSE_ENABLED), false, this,
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.FLING_PULSE_ENABLED), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.FLING_PULSE_COLOR), false, this,
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.FLING_PULSE_COLOR), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.FLING_PULSE_LAVALAMP_ENABLED), false, this,
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.FLING_PULSE_LAVALAMP_ENABLED), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.FLING_PULSE_LAVALAMP_SPEED), false, this,
+            resolver.registerContentObserver(Settings.Secure.getUriFor(
+                    Settings.Secure.FLING_PULSE_LAVALAMP_SPEED), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.PULSE_CUSTOM_DIMEN), false, this,
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PULSE_CUSTOM_DIMEN), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.PULSE_CUSTOM_DIV), false, this,
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PULSE_CUSTOM_DIV), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.PULSE_FILLED_BLOCK_SIZE), false, this,
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PULSE_FILLED_BLOCK_SIZE), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.PULSE_EMPTY_BLOCK_SIZE), false, this,
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PULSE_EMPTY_BLOCK_SIZE), false, this,
                     UserHandle.USER_ALL);
-            resolver.registerContentObserver(
-                    Settings.Secure.getUriFor(Settings.Secure.PULSE_CUSTOM_FUDGE_FACTOR), false, this,
+            resolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.PULSE_CUSTOM_FUDGE_FACTOR), false, this,
                     UserHandle.USER_ALL);
         }
 
@@ -198,12 +198,21 @@ public class PulseController {
             if (uri.equals(Settings.Secure.getUriFor(Settings.Secure.FLING_PULSE_ENABLED))) {
                 updateEnabled();
                 doLinkage();
-            } else if (uri.equals(Settings.Secure.getUriFor(Settings.Secure.PULSE_CUSTOM_DIMEN))
-                    || uri.equals(Settings.Secure.getUriFor(Settings.Secure.PULSE_CUSTOM_DIV))
-                    || uri.equals(Settings.Secure.getUriFor(Settings.Secure.PULSE_FILLED_BLOCK_SIZE))
-                    || uri.equals(Settings.Secure.getUriFor(Settings.Secure.PULSE_EMPTY_BLOCK_SIZE))
-                    ||uri.equals(Settings.Secure.getUriFor(Settings.Secure.PULSE_CUSTOM_FUDGE_FACTOR))) {
-                resetVisualizer();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.PULSE_CUSTOM_DIMEN))) {
+            resetvisualizer();
+            }  else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.PULSE_CUSTOM_DIV))) {
+            resetvisualizer();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.PULSE_FILLED_BLOCK_SIZE))) {
+            resetvisualizer();
+            }  else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.PULSE_EMPTY_BLOCK_SIZE))) {
+            resetvisualizer();
+            } else if (uri.equals(Settings.System.getUriFor(
+                    Settings.System.PULSE_CUSTOM_FUDGE_FACTOR))) {
+            resetvisualizer();
             } else {
                 update();
             }
@@ -218,15 +227,18 @@ public class PulseController {
         void update() {
             ContentResolver resolver = mContext.getContentResolver();
             int color = Settings.Secure.getIntForUser(resolver,
-                    Settings.Secure.FLING_PULSE_COLOR, Color.WHITE, UserHandle.USER_CURRENT);
+                    Settings.Secure.FLING_PULSE_COLOR, Color.WHITE,
+                    UserHandle.USER_CURRENT);
             mRenderer.setColor(color, false);
 
             boolean doLava = Settings.Secure.getIntForUser(resolver,
-                    Settings.Secure.FLING_PULSE_LAVALAMP_ENABLED, 1, UserHandle.USER_CURRENT) == 1;
+                    Settings.Secure.FLING_PULSE_LAVALAMP_ENABLED, 1,
+                    UserHandle.USER_CURRENT) == 1;
             mLavaLamp.setLavaLampEnabled(doLava);
 
             int time = Settings.Secure.getIntForUser(resolver,
-                    Settings.Secure.FLING_PULSE_LAVALAMP_SPEED, ColorAnimator.ANIM_DEF_DURATION,
+                    Settings.Secure.FLING_PULSE_LAVALAMP_SPEED,
+                    ColorAnimator.ANIM_DEF_DURATION,
                     UserHandle.USER_CURRENT);
             mLavaLamp.setAnimationTime(time);
         }
@@ -260,13 +272,6 @@ public class PulseController {
 
     public void setPulseObserver(PulseObserver observer) {
         mPulseObserver = observer;
-        initVisualizer();
-    }
-
-    public void initVisualizer() {
-        if (mPulseObserver == null) {
-            return;
-        }
         mValidator = new PulseFftValidator();
         mValidator.addCallbacks(mStreamValidatorCallbacks);
         mLavaLamp = new PulseColorAnimator();
@@ -403,12 +408,8 @@ public class PulseController {
     }
 
     private void doLinkVisualizer() {
-        doLinkVisualizer(false);
-    }
-
-    private void doLinkVisualizer(boolean force) {
         if (mVisualizer != null) {
-            if (!mLinked || force) {
+            if (!mLinked) {
                 setVisualizerLocked(true);
                 mValidator.reset(); // reset validation flags
                 mVisualizer.resetDrawing(); // clear stale bitmaps
@@ -425,14 +426,11 @@ public class PulseController {
         }
     }
 
-    public void resetVisualizer() {
-        final boolean wasLinked = mLinked;
-        if (wasLinked) {
-            doSilentUnlinkVisualizer();
-        }
-        initVisualizer();
-        if (wasLinked) {
-            doLinkVisualizer(true);
-        }
-    }
+   public void resetvisualizer() {
+        setPulseObserver(mPulseObserver);
+        setVisualizerLocked(true);
+        mVisualizer.setDrawingEnabled(true);
+        mVisualizer.link(0);
+        mLinked = true;
+   }
 }
